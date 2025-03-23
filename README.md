@@ -1,2 +1,5 @@
 # secure-secondhand-market
-중고 쇼핑 플랫폼
+python3 -m venv venv
+source venv/bin/activate
+pip install flask
+pip install flask-socketio
