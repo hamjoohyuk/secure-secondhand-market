@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}중고로운 평화나라{% endblock %}</title>
+  <!-- Socket.IO 클라이언트 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <style>
+    /* 다크 모드 스타일 */
+    body {
+      background-color: #181818;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #E0E0E0;
+    }
+    nav {
+      background-color: #242424;
+      padding: 15px 30px;
+      border-bottom: 1px solid #333;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      text-decoration: none;
+      color: #E0E0E0;
+      margin-right: 20px;
+      font-weight: 500;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #007AFF;
+    }
+    .search-container {
+      display: flex;
+      align-items: center;
+    }
+    .search-input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background-color: #333;
+      color: #E0E0E0;
+      font-size: 16px;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #007AFF;
+    }
+    .search-button {
+      background-color: #007AFF;
+      color: #fff;
+      padding: 8px 12px;
+      margin-left: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s ease;
+    }
+    .search-button:hover {
+      background-color: #005BB5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background-color: #2C2C2C;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    h1, h2, h3 {
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #E0E0E0;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: #333;
+      color: #E0E0E0;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    input:focus, textarea:focus, button:focus {
+      border-color: #007AFF;
+      outline: none;
+    }
+    button {
+      background-color: #007AFF;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #005BB5;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 12px;
+      border-bottom: 1px solid #444;
+      font-size: 16px;
+    }
+    .flash {
+      background-color: #FF6F00;
+      padding: 12px;
+      border: 1px solid #FF5722;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #E0E0E0;
+      font-size: 16px;
+    }
+    /* 채팅 영역 스타일 */
+    #chat {
+      margin-top: 40px;
+    }
+    #messages {
+      height: 250px;
+      overflow-y: auto;
+      border: 1px solid #444;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background-color: #222;
+      color: #E0E0E0;
+    }
+    .chat-message {
+      margin-bottom: 10px;
+    }
+    .chat-message .username {
+      font-weight: 600;
+      color: #007AFF;
+    }
+    .chat-message .message {
+      margin-top: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>
+      {% if session.get('user_id') %}
+      <a href="{{ url_for('home') }}">홈</a>
+      <a href="{{ url_for('profile') }}">프로필</a>
+      <a href="{{ url_for('transfer') }}">송금</a>
+      <a href="{{ url_for('report') }}">신고</a>
+      <a href="{{ url_for('logout') }}" style="color: red;">로그아웃</a>
+      {% if session.get('user_username') == 'admin' %}
+        <a href="{{ url_for('view_reports') }}" style="color: blue;">신고 확인</a>
+        <a href="{{ url_for('delete_product') }}" style="color: blue;">상품 삭제</a>
+        <a href="{{ url_for('delete_user') }}" style="color: blue;">계정 삭제</a>
+      {% endif %}
+    {% else %}
+      <a href="{{ url_for('login') }}">로그인</a>
+      <a href="{{ url_for('register') }}">회원가입</a>
+    {% endif %}
+    
+    </div>
+    <div class="search-container">
+      <form action="{{ url_for('search') }}" method="get">
+        <input type="text" name="query" class="search-input" placeholder="검색어를 입력하세요" style="width: 150px;">
+        <button type="submit" class="search-button" style="width: 80px; padding: 6px 10px; font-size: 14px;">검색</button>      
+      </form>
+    </div>
+  </nav>
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li class="flash">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

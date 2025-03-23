@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}상품 목록{% endblock %}
+{% block content %}
+<ul>
+  {% for product in products %}
+    <li>
+      <a href="{{ url_for('view_product', product_id=product.id) }}">{{ product.title }}</a>
+      - 가격: {{ product.price }}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

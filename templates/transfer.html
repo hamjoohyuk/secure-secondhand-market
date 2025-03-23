@@ -1,0 +1,20 @@
+
+{% extends "base.html" %}
+{% block title %}송금하기{% endblock %}
+{% block content %}
+<h2>송금하기</h2>
+<form action="{{ url_for('transfer') }}" method="post">
+    <div class="form-group">
+        <label for="recipient_username">수신자 이름:</label>
+        <input type="text" id="recipient_username" name="recipient_username" required>
+    </div>
+    <div class="form-group">
+        <label for="amount">금액:</label>
+        <input type="number" id="amount" name="amount" required>
+    </div>
+    <button type="submit">송금하기</button>
+</form>
+{% with messages = get_flashed_messages() %}
+{% endwith %}
+{% endblock %}
+

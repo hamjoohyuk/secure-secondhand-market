@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}상품 삭제{% endblock %}
+{% block content %}
+<h2>상품 삭제</h2>
+<form method="post">
+  삭제 대상(상품 ID): <input type="text" name="target_id" required><br>
+  <button type="submit">삭제</button>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}신고 목록 보기{% endblock %}
+{% block content %}
+{% for report in reports %}
+<h2>사용자명: {{ report.target_username }}</h2>
+<p>ID: {{ report.target_id }}</p>
+<p>신고 사유: {{ report.reason }}</p>
+{% endfor %}
+{% endblock %}
