@@ -112,7 +112,10 @@ def login():
         cursor = db.cursor()
         cursor.execute("SELECT * FROM user WHERE username = ? AND password = ?", (username, password_hash))
         user = cursor.fetchone()
-        
+        # SQL injection 차단
+        if not username.isalpha():
+            flash('사용자명은 알파벳으로만 구성되어야 합니다.')
+            return redirect(url_for('login'))
         if user:
             session['user_id'] = user['id']
             session['user_username'] = user['username']
